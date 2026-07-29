@@ -910,40 +910,6 @@ namespace AIVectorHelper
                 Log.W("PowerTRACE: CorelDRAW 中没有活动文档，已新建文档。");
             }
 
-            // 如果用户已经安装 HTA 使用说明里的 GlobalMacros，优先走进程内宏；
-            // 没有宏时使用临时文档路径，避免把位图直接跨文档自动化粘贴导致 CDR 2018 崩溃。
-            dynamic macroShape = null;
-            var macroImported = false;
-            try
-            {
-                dynamic manager = app.GMSManager;
-                var macroResult = manager.RunMacro("GlobalMacros", "AIVectorHelper.AI_ImportFile", input);
-                macroImported = Convert.ToInt32(macroResult) == 1;
-                if (macroImported)
-                {
-                    try { macroShape = workDoc.ActiveShape; } catch { }
-                    if (macroShape == null) macroImported = false;
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.W("PowerTRACE: GlobalMacros 不可用，改走临时文档路径: " + ex.Message);
-                macroImported = false;
-            }
-
-            if (macroImported)
-            {
-                UnlockCdrObject(macroShape);
-                var tracedFromMacro = TraceBitmapShape(macroShape);
-                if (tracedFromMacro == null)
-                    throw new InvalidOperationException("PowerTRACE 未能处理宏导入的位图。");
-                UnlockCdrObject(tracedFromMacro);
-                try { app.Refresh(); } catch { }
-                try { app.ActiveWindow.Activate(); } catch { }
-                Log.W("PowerTRACE: 使用 GlobalMacros 进程内导入 ✓ via=" + via);
-                return;
-            }
-
             dynamic tempDoc = null;
             try
             {
