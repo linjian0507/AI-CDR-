@@ -38,7 +38,7 @@ namespace AIVectorHelper
         private WrapPanel _vtracerModeRow;
         private TextBox _imagePresetDescription;
         private CheckBox _visionBox, _noBackgroundBox, _autoLayerBox, _reverseLayerBox, _autoImportBox;
-        private TextBox _proxyBox, _cdrProgIdBox;
+        private TextBox _proxyBox;
         private TextBlock _status, _jobStatus, _svgReferenceLabel, _imageSourceLabel, _imageResultLabel;
         private Image _svgReferencePreview, _imageSourcePreview, _imageResultPreview;
         private StackPanel _layerPanel;
@@ -436,13 +436,11 @@ namespace AIVectorHelper
                 await TestApiConnectionAsync(settingsProfile.SelectedIndex);
             }));
             _proxyBox = Field(panel, "代理（可选）", _config.Proxy);
-            _cdrProgIdBox = Field(panel, "CDR ProgID", _config.CdrProgId);
-            panel.Children.Add(Button("保存网络/CDR设置", (s, e) =>
+            panel.Children.Add(Button("保存网络设置", (s, e) =>
             {
                 _config.Proxy = _proxyBox.Text.Trim();
-                _config.CdrProgId = _cdrProgIdBox.Text.Trim();
                 SaveConfig();
-                SetStatus("网络/CDR设置已保存。");
+                SetStatus("网络设置已保存。");
             }));
             settingsProfile.SelectedIndex = Math.Max(0, Math.Min(_config.ActiveIndex, Math.Max(0, _config.Profiles.Count - 1)));
             if (settingsProfile.SelectedIndex < 0 && _config.ActiveProfile != null) FillSettings(_config.ActiveProfile);
@@ -1479,11 +1477,6 @@ namespace AIVectorHelper
             var shared = AppDomain.CurrentDomain.GetData("AIVectorHelper.CorelApp") as CdrApp;
             if (shared != null) { via = "启动器注入"; return shared; }
             if (PluginHost.App != null) { via = "插件入口注入"; return PluginHost.App; }
-            var ids = new[] { _config.CdrProgId, "CorelDRAW.Application.20", "CorelDRAW.Application" }.Where(x => !string.IsNullOrWhiteSpace(x)).Distinct();
-            foreach (var id in ids)
-            {
-                try { var app = (CdrApp)System.Runtime.InteropServices.Marshal.GetActiveObject(id); via = id; return app; } catch { }
-            }
             via = ""; return null;
         }
 

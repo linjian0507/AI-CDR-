@@ -22,3 +22,9 @@
 
 - 移除「诊断 CDR 连接」按钮。
 - 原生插件安装时已经选择目标 CDR 版本，运行时由 CDR 原生入口注入 `Application`，不再需要额外诊断按钮。
+
+## v2.3.4 - 2026-07-29
+
+- 删除模型设置中的 `CDR ProgID` 输入框。
+- 删除旧版通过 `Marshal.GetActiveObject` 按 ProgID 连接 CDR 的兼容代码。
+- CDR 连接统一使用原生插件入口注入的当前 `Application` 对象。

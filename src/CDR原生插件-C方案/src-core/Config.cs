@@ -64,9 +64,6 @@ namespace AIVectorCore
         [JsonProperty("proxy")]
         public string Proxy { get; set; } = "";
 
-        [JsonProperty("cdrProgId")]
-        public string CdrProgId { get; set; } = "CorelDRAW.Application.20";
-
         [JsonProperty("autoLayer")]
         public bool AutoLayer { get; set; } = true;
 
@@ -125,7 +122,6 @@ namespace AIVectorCore
             if (string.IsNullOrWhiteSpace(VariantCount)) VariantCount = "1";
             if (string.IsNullOrWhiteSpace(Creativity)) Creativity = "0.6";
             if (Proxy == null) Proxy = "";
-            if (CdrProgId == null) CdrProgId = "CorelDRAW.Application.20";
         }
 
         public static AppConfig Load(string path)
