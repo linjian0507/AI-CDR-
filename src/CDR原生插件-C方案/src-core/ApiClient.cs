@@ -264,7 +264,8 @@ namespace AIVectorCore
 
         public async Task<IReadOnlyList<string>> FetchModelsAsync(ApiProfile profile, CancellationToken cancellationToken)
         {
-            EnsureUsable(profile);
+            // 获取 /models 时模型名本来就尚未选择，不能使用要求 profile.Model 的完整校验。
+            EnsureEndpointUsable(profile);
             try
             {
                 return await FetchModelsViaHttpAsync(profile, cancellationToken).ConfigureAwait(false);
@@ -887,10 +888,15 @@ namespace AIVectorCore
 
         private static void ValidateProfile(ApiProfile profile)
         {
+            ValidateEndpoint(profile);
+            if (string.IsNullOrWhiteSpace(profile.Model)) throw new ArgumentException("模型档案缺少模型名。", nameof(profile));
+        }
+
+        private static void ValidateEndpoint(ApiProfile profile)
+        {
             if (profile == null) throw new ArgumentNullException(nameof(profile));
             if (string.IsNullOrWhiteSpace(profile.BaseUrl)) throw new ArgumentException("模型档案缺少 API 地址。", nameof(profile));
             if (string.IsNullOrWhiteSpace(profile.ApiKey)) throw new ArgumentException("模型档案缺少 API Key。", nameof(profile));
-            if (string.IsNullOrWhiteSpace(profile.Model)) throw new ArgumentException("模型档案缺少模型名。", nameof(profile));
         }
 
         private static string JoinUrl(string baseUrl, string suffix)
@@ -963,6 +969,12 @@ namespace AIVectorCore
         {
             EnsureNotDisposed();
             ValidateProfile(profile);
+        }
+
+        private void EnsureEndpointUsable(ApiProfile profile)
+        {
+            EnsureNotDisposed();
+            ValidateEndpoint(profile);
         }
 
         public void Dispose()

@@ -1395,9 +1395,17 @@ namespace AIVectorHelper
             {
                 var app = GetApp(out var via);
                 if (app == null) throw new InvalidOperationException("没有取得 CorelDRAW Application。");
-                SetStatus("连接成功 ✓ " + via + "，CorelDRAW 版本 " + app.VersionMajor);
+                // 不在诊断按钮中读取 VersionMajor 等 COM 属性。
+                // 某些 CDR 版本/位数的 COM 代理在 WPF 宿主线程访问属性时会直接导致 CDR 退出；
+                // 能取得原生 Application 对象本身已经足够证明插件入口连接成功。
+                SetStatus("连接成功 ✓ " + via + "，已取得 CDR 原生 Application 对象。");
+                Log.W("CDR 诊断成功: via=" + via);
             }
-            catch (Exception ex) { SetStatus("连接失败: " + ex.Message); }
+            catch (Exception ex)
+            {
+                SetStatus("连接失败: " + ex.Message);
+                Log.W("CDR 诊断失败: " + ex);
+            }
         }
 
         private AppConfig LoadConfig()
