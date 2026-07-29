@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <OutputType>Library</OutputType>
+    <AssemblyName>AIVectorHelper</AssemblyName>
+    <RootNamespace>AIVectorHelper</RootNamespace>
+    <LangVersion>latest</LangVersion>
+    <Platforms>AnyCPU</Platforms>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <Deterministic>true</Deterministic>
+    <ComVisible>false</ComVisible>
+    <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
+    <CorelProgramsDir Condition="'$(CorelProgramsDir)' == ''">$(CORELDRAW_PROGRAMS_DIR)</CorelProgramsDir>
+    <CorelProgramsDir Condition="'$(CorelProgramsDir)' == ''">C:\Program Files\Corel\CorelDRAW Graphics Suite 2024\Programs64</CorelProgramsDir>
+  </PropertyGroup>
+
+  <!-- CorelDRAW 进程内对象模型(编译期引用, 运行期由 CDR 进程已加载的同名程序集解析, 不随插件分发) -->
+  <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Corel.Interop.VGCore">
+      <HintPath>$(CorelProgramsDir)\Assemblies\Corel.Interop.VGCore.dll</HintPath>
+      <EmbedInteropTypes>false</EmbedInteropTypes>
+      <Private>false</Private>
+    </Reference>
+    <ProjectReference Include="..\src-core\AIVectorCore.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\tools\vtracer\vtracer.exe" Link="tools\vtracer\vtracer.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\tools\vtracer\LICENSE.txt" Link="tools\vtracer\LICENSE.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,49 @@
+<Project ToolsVersion="4.0" DefaultTargets="Build"
+         xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
+    <ProjectGuid>{6D7D5F59-49D8-4F9E-9B07-C7EAE7BE3A12}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>AIVectorLauncher</RootNamespace>
+    <AssemblyName>AIVectorLauncher</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <PlatformTarget>x64</PlatformTarget>
+    <OutputPath>bin\export\</OutputPath>
+    <IntermediateOutputPath>obj\export\</IntermediateOutputPath>
+    <Optimize>true</Optimize>
+    <DebugSymbols>false</DebugSymbols>
+    <FileAlignment>512</FileAlignment>
+    <LangVersion>5</LangVersion>
+    <TargetFrameworkRootPath>C:\Users\renny\.nuget\packages\microsoft.netframework.referenceassemblies.net48\1.0.3\build\</TargetFrameworkRootPath>
+    <DllExportTargetFrameworkVersion>v4.5</DllExportTargetFrameworkVersion>
+    <DllExportSdkPath>C:\Users\renny\.nuget\packages\dllexport\1.8.1\tools\coreclr\</DllExportSdkPath>
+    <DllExportFrameworkPath>C:\Users\renny\.nuget\packages\dllexport\1.8.1\tools\coreclr\;C:\Windows\Microsoft.NET\Framework64\v4.0.30319</DllExportFrameworkPath>
+    <CorelProgramsDir Condition="'$(CorelProgramsDir)' == ''">$(CORELDRAW_PROGRAMS_DIR)</CorelProgramsDir>
+    <CorelProgramsDir Condition="'$(CorelProgramsDir)' == ''">C:\Program Files\Corel\CorelDRAW Graphics Suite 2024\Programs64</CorelProgramsDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="Corel.Interop.VGCore">
+      <HintPath>$(CorelProgramsDir)\Assemblies\Corel.Interop.VGCore.dll</HintPath>
+      <EmbedInteropTypes>true</EmbedInteropTypes>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="RGiesecke.DllExport.Metadata">
+      <HintPath>C:\Users\renny\.nuget\packages\unmanagedexports\1.2.7\lib\net\RGiesecke.DllExport.Metadata.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="Launcher.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="build-tools-unmanaged\RGiesecke.DllExport.targets" />
+
+</Project>
