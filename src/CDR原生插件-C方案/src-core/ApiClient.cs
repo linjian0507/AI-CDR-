@@ -408,10 +408,11 @@ namespace AIVectorCore
             string quality,
             CancellationToken cancellationToken)
         {
-            EnsureUsable(profile);
+            EnsureEndpointUsable(profile);
+            var selectedModel = ResolveModel(profile, model);
             var body = new JObject
             {
-                ["model"] = string.IsNullOrWhiteSpace(model) ? profile.Model : model,
+                ["model"] = selectedModel,
                 ["prompt"] = prompt ?? "",
                 ["n"] = 1
             };
@@ -455,14 +456,15 @@ namespace AIVectorCore
             string quality,
             CancellationToken cancellationToken)
         {
-            EnsureUsable(profile);
+            EnsureEndpointUsable(profile);
+            var selectedModel = ResolveModel(profile, model);
             var image = DecodeDataUrl(dataUrl);
             var url = JoinUrl(profile.BaseUrl, "/images/edits");
             try
             {
                 using (var form = new MultipartFormDataContent())
                 {
-                    form.Add(new StringContent(string.IsNullOrWhiteSpace(model) ? profile.Model : model), "model");
+                    form.Add(new StringContent(selectedModel), "model");
                     form.Add(new StringContent(prompt ?? ""), "prompt");
                     if (!string.IsNullOrWhiteSpace(size)) form.Add(new StringContent(size), "size");
                     if (!string.IsNullOrWhiteSpace(quality)) form.Add(new StringContent(quality), "quality");
@@ -897,6 +899,14 @@ namespace AIVectorCore
             if (profile == null) throw new ArgumentNullException(nameof(profile));
             if (string.IsNullOrWhiteSpace(profile.BaseUrl)) throw new ArgumentException("模型档案缺少 API 地址。", nameof(profile));
             if (string.IsNullOrWhiteSpace(profile.ApiKey)) throw new ArgumentException("模型档案缺少 API Key。", nameof(profile));
+        }
+
+        private static string ResolveModel(ApiProfile profile, string model)
+        {
+            var selectedModel = string.IsNullOrWhiteSpace(model) ? profile.Model : model;
+            if (string.IsNullOrWhiteSpace(selectedModel))
+                throw new ArgumentException("生图模型名为空，请先选择图像模型。", nameof(model));
+            return selectedModel;
         }
 
         private static string JoinUrl(string baseUrl, string suffix)

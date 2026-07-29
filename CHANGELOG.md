@@ -28,3 +28,8 @@
 - 删除模型设置中的 `CDR ProgID` 输入框。
 - 删除旧版通过 `Marshal.GetActiveObject` 按 ProgID 连接 CDR 的兼容代码。
 - CDR 连接统一使用原生插件入口注入的当前 `Application` 对象。
+
+## v2.3.5 - 2026-07-29
+
+- 修复 SVG 模型为空、但单独选择了生图模型时，生图请求仍被错误拦截的问题。
+- 生图接口现在只要求 API 地址、API Key 和实际传入的图像模型，不再强制要求 SVG 模型。
