@@ -186,7 +186,9 @@ namespace AIVectorInstaller
         {
             if (major >= 14 && major <= 18) return "X" + (major - 10);
             if (major == 19) return "2017";
-            if (major >= 20 && major <= 30) return (1998 + major).ToString();
+            if (major == 24) return "2022";
+            if (major >= 25 && major <= 30) return (1999 + major).ToString();
+            if (major >= 20 && major <= 23) return (1998 + major).ToString();
             return "";
         }
 

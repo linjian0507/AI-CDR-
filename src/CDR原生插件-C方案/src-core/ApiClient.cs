@@ -471,7 +471,7 @@ namespace AIVectorCore
 
                     var file = new ByteArrayContent(image.Bytes);
                     file.Headers.ContentType = new MediaTypeHeaderValue(image.MediaType);
-                    // 与可正常工作的 HTA 版本保持一致：中转站的编辑接口使用单数 image。
+                    // 中转站的编辑接口使用单数 image。
                     form.Add(file, "image", "source." + image.Extension);
 
                     using (var request = new HttpRequestMessage(HttpMethod.Post, url))
@@ -491,7 +491,7 @@ namespace AIVectorCore
             {
                 try
                 {
-                    // HTA 版本使用 MSXML2.ServerXMLHTTP；CorelDRAW 进程内的 HttpClient
+                    // 某些 CorelDRAW 宿主环境中的 HttpClient
                     // 可能被网络过滤器拦截，因此先复用同一套 MSXML multipart 请求。
                     return await EditImageViaMsxmlAsync(profile, url, image, model, prompt, size, quality, cancellationToken).ConfigureAwait(false);
                 }
@@ -504,7 +504,7 @@ namespace AIVectorCore
                     catch (Exception curlError)
                     {
                         throw new HttpRequestException(
-                            "图像编辑接口请求失败，HTA/MSXML 与 curl 备用通道均失败："
+                            "图像编辑接口请求失败，MSXML 与 curl 备用通道均失败："
                             + msxmlError.Message + "；" + curlError.Message,
                             httpError);
                     }

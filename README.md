@@ -2,7 +2,7 @@
 
 AI 矢量助手是一个运行在 Windows + CorelDRAW 中的 AI 辅助设计插件。它可以通过文字提示词或参考图片生成 SVG，解析 SVG 中的分组并导入 CorelDRAW；也可以调用图片模型进行生图、改图、放大、去字、提取主体等处理，再把结果导入 CDR 或交给本地描摹工具转成可编辑矢量。
 
-本仓库发布的是 **v2.3.5** 当前版本，包含：
+本仓库发布的是 **v2.3.6** 当前版本，包含：
 
 - 自动检测 CorelDRAW 安装位置的 Windows 安装程序；
 - CorelDRAW 原生插件源码；
@@ -700,6 +700,16 @@ tools\vtracer\vtracer.exe
 ### Q10：模型设置里为什么没有 CDR 诊断按钮
 
 当前版本采用 CDR 原生 Addon 方案。安装程序已经让用户选择目标 CDR 版本，插件加载时也会由 CDR 原生入口注入当前 `Application` 对象，因此不再提供额外的 CDR 诊断按钮，避免在不同 CDR 版本上访问不稳定的 COM 属性。
+
+### Q11：CorelDRAW 27 导入生成图片时闪退
+
+v2.3.6 已将图片和 SVG 导入改为调用当前 CDR 运行时的：
+
+```text
+ActiveLayer.Import(path)
+```
+
+不再把旧版 `Corel.Interop.VGCore` 的 `cdrFilter` 和 `StructImportOptions` 对象传给新版本 CDR。请使用 v2.3.6 或更高版本重新安装后再测试。
 
 ---
 

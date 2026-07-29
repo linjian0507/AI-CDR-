@@ -26,18 +26,21 @@ Compress-Archive -Path (Join-Path $payloadRoot "*") `
     -CompressionLevel Optimal
 
 dotnet build (Join-Path $installer "AIVectorInstaller.csproj") -c $Configuration
+if ($LASTEXITCODE -ne 0) {
+    throw "安装程序构建失败，退出码：$LASTEXITCODE"
+}
 
 $built = Join-Path $installer "bin\$Configuration\net48\AIVectorInstaller.exe"
-$target = Join-Path $release "AI矢量助手-安装程序-v2.3.5.exe"
+$target = Join-Path $release "AI矢量助手-安装程序-v2.3.6.exe"
 Copy-Item -LiteralPath $built -Destination $target -Force
 
-$zip = Join-Path $release "AI矢量助手-v2.3.5-安装包.zip"
+$zip = Join-Path $release "AI矢量助手-v2.3.6-安装包.zip"
 if (Test-Path -LiteralPath $zip) {
     Remove-Item -LiteralPath (Resolve-Path -LiteralPath $zip).Path -Force
 }
 $readme = Join-Path $release "安装说明.txt"
 @"
-AI 矢量助手 v2.3.5 安装包
+AI 矢量助手 v2.3.6 安装包
 
 1. 关闭所有 CorelDRAW。
 2. 右键 AI矢量助手-安装程序-v2.3.1.exe，选择“以管理员身份运行”。

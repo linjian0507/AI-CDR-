@@ -622,8 +622,8 @@ namespace AIVectorHelper
                 var app = GetApp(out var via);
                 if (app == null) throw new InvalidOperationException("没有取得 CorelDRAW Application。");
                 var doc = app.ActiveDocument ?? app.CreateDocument();
-                doc.ActiveLayer.Import(path, Corel.Interop.VGCore.cdrFilter.cdrSVG, default(Corel.Interop.VGCore.StructImportOptions));
-                UnlockImportedContent(doc, doc.ActiveShape);
+                var importedSvg = ImportFileToActiveLayer(doc, path);
+                UnlockImportedContent(doc, importedSvg);
                 var made = 0;
                 if (_autoLayerBox != null && _autoLayerBox.IsChecked == true)
                 {
@@ -764,8 +764,8 @@ namespace AIVectorHelper
                 var app = GetApp(out var via);
                 if (app == null) throw new InvalidOperationException("没有取得 CorelDRAW Application。");
                 var doc = app.ActiveDocument ?? app.CreateDocument();
-                doc.ActiveLayer.Import(path, Corel.Interop.VGCore.cdrFilter.cdrAutoSense, default(Corel.Interop.VGCore.StructImportOptions));
-                UnlockImportedContent(doc, doc.ActiveShape);
+                var importedImage = ImportFileToActiveLayer(doc, path);
+                UnlockImportedContent(doc, importedImage);
                 SetStatus("图片导入成功 ✓ " + via);
             }
             catch (Exception ex) { SetStatus("图片导入失败: " + ex.Message); Log.W("图片导入失败: " + ex); }
@@ -784,6 +784,20 @@ namespace AIVectorHelper
                     UnlockImportedContent(doc, children.Item(i));
             }
             catch { }
+        }
+
+        private static dynamic ImportFileToActiveLayer(dynamic doc, string path)
+        {
+            if (doc == null) throw new InvalidOperationException("没有取得 CorelDRAW 文档。");
+            if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
+                throw new FileNotFoundException("待导入文件不存在。", path);
+
+            // 使用 CDR 当前运行时的动态 Import(path) 默认签名，
+            // 避免把旧版 Corel.Interop.VGCore 的枚举和 StructImportOptions
+            // 强行传给 CorelDRAW 27 等新版本，降低跨版本崩溃风险。
+            dynamic layer = doc.ActiveLayer;
+            layer.Import(path);
+            return doc.ActiveShape;
         }
 
         private static void UnlockCdrObject(dynamic value)
@@ -868,7 +882,7 @@ namespace AIVectorHelper
                     : Visibility.Collapsed;
         }
 
-        // 按 HTA 版本已验证的方式调用 CDR 内置 PowerTRACE：
+        // 使用 CDR 原生对象模型调用内置 PowerTRACE：
         // Bitmap.Trace(3) = cdrTraceClipart，失败时回退到 Trace(5) = cdrTraceHighQualityImage，
         // 再由 TraceSettings.Finish() 生成可编辑矢量。
         private static dynamic TraceBitmapShape(dynamic shape)
@@ -928,7 +942,7 @@ namespace AIVectorHelper
                 UnlockCdrObject(traced);
 
                 // 必须先复制，再切回工作文档粘贴，最后关闭临时文档。
-                // 这是 HTA 版本针对 CDR 2018 跨文档自动化限制采用的稳定顺序。
+                // 这是跨文档自动化下更稳定的复制、粘贴和关闭顺序。
                 traced.Copy();
                 try { workDoc.Activate(); } catch { }
                 dynamic pasted = workDoc.ActiveLayer.Paste();
@@ -1057,7 +1071,7 @@ namespace AIVectorHelper
             return new ImageInput { DataUrl = _svgReferenceData };
         }
 
-        // Match the HTA reference pipeline: cap the long edge at 1280px and
+            // Keep the reference-image pipeline stable: cap the long edge at 1280px and
         // rasterize onto a white canvas before sending the image to a vision model.
         private static string NormalizeSvgReference(string dataUrl)
         {
@@ -1647,7 +1661,7 @@ namespace AIVectorHelper
                 var doc = app.ActiveDocument;
                 if (doc == null) throw new InvalidOperationException("CorelDRAW 中没有打开的文档。");
 
-                // 与 HTA 版本保持一致：同时兼容 Selection 属性和 Selection() 方法。
+                // 同时兼容 Selection 属性和 Selection() 方法。
                 dynamic dynamicDoc = doc;
                 dynamic selection = null;
                 var count = 0;
