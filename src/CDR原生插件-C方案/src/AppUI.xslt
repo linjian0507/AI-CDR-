@@ -18,11 +18,11 @@
     <xsl:copy>
       <xsl:apply-templates select="node()|@*"/>
 
-      <!-- 工具栏按钮: 切换 AI矢量助手 停靠窗 -->
+      <!-- 工具栏按钮: 切换 AI矢量助手 v2.3.7 停靠窗 -->
       <itemData guid="1f6f1448-5111-4dc2-b84f-f386b5f194ac" noBmpOnMenu="true"
           type="checkButton"
           check="*Docker('97d37334-68f4-40aa-be6f-7677f35de4c7')"
-          userCaption="AI矢量助手"
+          userCaption="AI矢量助手 v2.3.7"
           enable="true">
       </itemData>
 
@@ -41,7 +41,7 @@
       <xsl:apply-templates select="node()|@*"/>
       <commandBarData guid="9e10c5b3-bd16-4d2c-9bde-920ec67a5b19"
                       nonLocalizableName="AIVectorHelper"
-                      userCaption="AI矢量助手"
+                      userCaption="AI矢量助手 v2.3.7"
                       locked="false"
                       type="toolbar">
         <toolbar>
@@ -62,7 +62,7 @@
     <xsl:copy>
       <xsl:apply-templates select="node()|@*"/>
       <dockerData guid="97d37334-68f4-40aa-be6f-7677f35de4c7"
-                  userCaption="AI矢量助手"
+                  userCaption="AI矢量助手 v2.3.7"
                   wantReturn="true"
                   focusStyle="noThrow">
         <container>

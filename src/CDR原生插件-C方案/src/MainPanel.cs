@@ -30,7 +30,7 @@ namespace AIVectorHelper
         private string _jobTitle = "";
         private string _jobOutcome = "";
 
-        private ComboBox _profileBox, _modelBox, _imageProfileBox, _imageModelBox, _variantBox, _historyBox;
+        private ComboBox _profileBox, _modelBox, _imageProfileBox, _imageModelBox, _variantBox, _historyBox, _settingsProfileBox;
         private TextBox _svgPrompt, _styleBox, _paletteBox, _widthBox, _heightBox, _layersBox, _svgCode, _editBox;
         private TextBox _imagePrompt, _profileNameBox, _baseUrlBox, _apiKeyBox;
         private ComboBox _settingsModelBox, _settingsImageModelBox;
@@ -369,45 +369,53 @@ namespace AIVectorHelper
             var panel = NewPanel();
             panel.Children.Add(Label("模型档案"));
             var profileRow = new WrapPanel();
-            var settingsProfile = new ComboBox { Width = 165, DisplayMemberPath = "Name" };
-            settingsProfile.SelectionChanged += (s, e) =>
+            _settingsProfileBox = new ComboBox { Width = 165, DisplayMemberPath = "Name" };
+            _settingsProfileBox.SelectionChanged += (s, e) =>
             {
-                if (settingsProfile.SelectedIndex >= 0)
+                var index = _settingsProfileBox.SelectedIndex;
+                if (index >= 0 && index < _config.Profiles.Count && _profileNameBox != null)
                 {
-                    _profileBox.SelectedIndex = settingsProfile.SelectedIndex;
-                    FillSettings((ApiProfile)settingsProfile.SelectedItem);
+                    _config.ActiveIndex = index;
+                    if (_profileBox != null) _profileBox.SelectedIndex = index;
+                    FillSettings(_config.Profiles[index]);
                 }
             };
-            profileRow.Children.Add(settingsProfile);
+            profileRow.Children.Add(_settingsProfileBox);
             profileRow.Children.Add(Button("新增", (s, e) =>
             {
                 _config.Profiles.Add(new ApiProfile { Name = "新模型", ApiType = "openai" });
-                RefreshProfiles();
-                settingsProfile.ItemsSource = _config.Profiles;
-                settingsProfile.SelectedIndex = _config.Profiles.Count - 1;
+                var index = _config.Profiles.Count - 1;
+                _config.ActiveIndex = index;
+                RefreshProfiles(index);
+                FillSettings(_config.Profiles[index]);
+                SaveConfig();
             }));
             profileRow.Children.Add(Button("删除", (s, e) =>
             {
-                if (settingsProfile.SelectedIndex >= 0 && _config.Profiles.Count > 1)
+                var index = _settingsProfileBox.SelectedIndex;
+                if (index >= 0 && _config.Profiles.Count > 1)
                 {
-                    _config.Profiles.RemoveAt(settingsProfile.SelectedIndex);
-                    RefreshProfiles();
-                    settingsProfile.ItemsSource = _config.Profiles;
-                    settingsProfile.SelectedIndex = 0;
+                    _config.Profiles.RemoveAt(index);
+                    _config.ActiveIndex = Math.Max(0, Math.Min(index, _config.Profiles.Count - 1));
+                    RefreshProfiles(_config.ActiveIndex);
+                    FillSettings(_config.Profiles[_config.ActiveIndex]);
+                    SaveConfig();
                 }
             }));
             profileRow.Children.Add(Button("复制", (s, e) =>
             {
-                if (settingsProfile.SelectedIndex < 0) return;
-                var copy = _config.Profiles[settingsProfile.SelectedIndex].Clone();
+                var index = _settingsProfileBox.SelectedIndex;
+                if (index < 0 || index >= _config.Profiles.Count) return;
+                var copy = _config.Profiles[index].Clone();
                 copy.Name = (copy.Name ?? "模型") + " 副本";
                 _config.Profiles.Add(copy);
-                RefreshProfiles();
-                settingsProfile.ItemsSource = _config.Profiles;
-                settingsProfile.SelectedIndex = _config.Profiles.Count - 1;
+                var copyIndex = _config.Profiles.Count - 1;
+                _config.ActiveIndex = copyIndex;
+                RefreshProfiles(copyIndex);
+                FillSettings(copy);
+                SaveConfig();
             }));
             panel.Children.Add(profileRow);
-            settingsProfile.ItemsSource = _config.Profiles;
 
             _profileNameBox = Field(panel, "名称", "");
             _apiTypeBox = new ComboBox { ItemsSource = new[] { "openai", "anthropic" }, Margin = new Thickness(0, 0, 0, 4) };
@@ -424,16 +432,16 @@ namespace AIVectorHelper
             panel.Children.Add(_apiKeyBox);
             _visionBox = new CheckBox { Content = "支持参考图", Margin = new Thickness(0, 2, 0, 6) };
             panel.Children.Add(_visionBox);
-            panel.Children.Add(Button("保存模型设置", (s, e) => SaveSettings(settingsProfile.SelectedIndex)));
+            panel.Children.Add(Button("保存模型设置", (s, e) => SaveSettings(_settingsProfileBox.SelectedIndex)));
             panel.Children.Add(Button("获取模型列表", async (s, e) =>
             {
-                SyncSettingsToProfile(settingsProfile.SelectedIndex);
-                await FetchModelsAsync(settingsProfile.SelectedIndex);
+                SyncSettingsToProfile(_settingsProfileBox.SelectedIndex);
+                await FetchModelsAsync(_settingsProfileBox.SelectedIndex);
             }));
             panel.Children.Add(Button("测试中转连接", async (s, e) =>
             {
-                SyncSettingsToProfile(settingsProfile.SelectedIndex);
-                await TestApiConnectionAsync(settingsProfile.SelectedIndex);
+                SyncSettingsToProfile(_settingsProfileBox.SelectedIndex);
+                await TestApiConnectionAsync(_settingsProfileBox.SelectedIndex);
             }));
             _proxyBox = Field(panel, "代理（可选）", _config.Proxy);
             panel.Children.Add(Button("保存网络设置", (s, e) =>
@@ -442,9 +450,9 @@ namespace AIVectorHelper
                 SaveConfig();
                 SetStatus("网络设置已保存。");
             }));
-            settingsProfile.SelectedIndex = Math.Max(0, Math.Min(_config.ActiveIndex, Math.Max(0, _config.Profiles.Count - 1)));
-            if (settingsProfile.SelectedIndex < 0 && _config.ActiveProfile != null) FillSettings(_config.ActiveProfile);
-            else if (settingsProfile.SelectedIndex < 0) RefreshSettingsModelSelectors(null);
+            RefreshProfiles();
+            if (_config.ActiveProfile != null) FillSettings(_config.ActiveProfile);
+            else RefreshSettingsModelSelectors(null);
             return Scroll(panel);
         }
 
@@ -485,19 +493,41 @@ namespace AIVectorHelper
         private static TextBox Field(Panel panel, string label, string value) { panel.Children.Add(Label(label)); var box = new TextBox { Text = value ?? "", MinWidth = 240, Margin = new Thickness(0, 0, 0, 3) }; panel.Children.Add(box); return box; }
         private static TextBox SmallField(Panel panel, string label, string value) { panel.Children.Add(new TextBlock { Text = label, Margin = new Thickness(0, 0, 2, 0), VerticalAlignment = VerticalAlignment.Center }); var box = new TextBox { Text = value ?? "", Width = 48, Margin = new Thickness(0, 0, 5, 0) }; panel.Children.Add(box); return box; }
 
-        private void RefreshProfiles()
+        private void RefreshProfiles(int? preferredIndex = null)
         {
-            if (_profileBox == null) return;
-            _profileBox.ItemsSource = null;
-            _profileBox.ItemsSource = _config.Profiles;
-            if (_config.Profiles.Count > 0)
-                _profileBox.SelectedIndex = Math.Max(0, Math.Min(_config.ActiveIndex, _config.Profiles.Count - 1));
+            if (_config.Profiles == null) _config.Profiles = new List<ApiProfile>();
+            var index = preferredIndex.HasValue
+                ? preferredIndex.Value
+                : _config.ActiveIndex;
+            index = _config.Profiles.Count == 0
+                ? -1
+                : Math.Max(0, Math.Min(index, _config.Profiles.Count - 1));
+
+            if (_profileBox != null)
+            {
+                _profileBox.ItemsSource = null;
+                _profileBox.ItemsSource = _config.Profiles;
+                _profileBox.SelectedIndex = index;
+            }
             if (_imageProfileBox != null)
             {
+                var imageIndex = preferredIndex.HasValue ? index : _imageProfileBox.SelectedIndex;
+                if (imageIndex < 0 || imageIndex >= _config.Profiles.Count)
+                {
+                    imageIndex = _config.Profiles.FindIndex(x =>
+                        (x.Models ?? new List<string>()).Any(m => m.IndexOf("image", StringComparison.OrdinalIgnoreCase) >= 0) ||
+                        (x.Model ?? "").IndexOf("image", StringComparison.OrdinalIgnoreCase) >= 0);
+                }
+                if (imageIndex < 0) imageIndex = index;
                 _imageProfileBox.ItemsSource = null;
                 _imageProfileBox.ItemsSource = _config.Profiles;
-                var imageIndex = _config.Profiles.FindIndex(x => (x.Models ?? new List<string>()).Any(m => m.IndexOf("image", StringComparison.OrdinalIgnoreCase) >= 0) || (x.Model ?? "").IndexOf("image", StringComparison.OrdinalIgnoreCase) >= 0);
-                _imageProfileBox.SelectedIndex = imageIndex >= 0 ? imageIndex : _profileBox.SelectedIndex;
+                _imageProfileBox.SelectedIndex = imageIndex;
+            }
+            if (_settingsProfileBox != null)
+            {
+                _settingsProfileBox.ItemsSource = null;
+                _settingsProfileBox.ItemsSource = _config.Profiles;
+                _settingsProfileBox.SelectedIndex = index;
             }
         }
 
@@ -505,6 +535,8 @@ namespace AIVectorHelper
         {
             var p = ActiveProfile;
             if (p == null) return;
+            if (_profileBox != null && _profileBox.SelectedIndex >= 0)
+                _config.ActiveIndex = _profileBox.SelectedIndex;
             var models = new List<string>(p.Models ?? new List<string>());
             if (!string.IsNullOrWhiteSpace(p.Model) && !models.Contains(p.Model)) models.Insert(0, p.Model);
             _modelBox.ItemsSource = models;
