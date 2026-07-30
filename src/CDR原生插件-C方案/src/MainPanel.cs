@@ -824,11 +824,15 @@ namespace AIVectorHelper
             if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
                 throw new FileNotFoundException("待导入文件不存在。", path);
 
-            // 使用 CDR 当前运行时的动态 Import(path) 默认签名，
-            // 避免把旧版 Corel.Interop.VGCore 的枚举和 StructImportOptions
-            // 强行传给 CorelDRAW 27 等新版本，降低跨版本崩溃风险。
+            // 不直接使用编译期旧版 Corel.Interop.VGCore 的枚举和 StructImportOptions。
+            // 从当前 CDR 进程实际加载的互操作程序集创建参数，兼容 2023/2026 等版本。
             dynamic layer = doc.ActiveLayer;
-            layer.Import(path);
+            var runtimeAssembly = typeof(CdrApp).Assembly;
+            var filterType = runtimeAssembly.GetType("Corel.Interop.VGCore.cdrFilter", true);
+            var optionsType = runtimeAssembly.GetType("Corel.Interop.VGCore.StructImportOptions", true);
+            var filter = Enum.Parse(filterType, "cdrAutoSense");
+            var options = Activator.CreateInstance(optionsType);
+            layer.Import(path, filter, options);
             return doc.ActiveShape;
         }
 

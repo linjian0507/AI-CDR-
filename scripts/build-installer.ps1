@@ -31,19 +31,19 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 $built = Join-Path $installer "bin\$Configuration\net48\AIVectorInstaller.exe"
-$target = Join-Path $release "AI矢量助手-安装程序-v2.3.7.exe"
+$target = Join-Path $release "AI矢量助手-安装程序-v2.3.8.exe"
 Copy-Item -LiteralPath $built -Destination $target -Force
 
-$zip = Join-Path $release "AI矢量助手-v2.3.7-安装包.zip"
+$zip = Join-Path $release "AI矢量助手-v2.3.8-安装包.zip"
 if (Test-Path -LiteralPath $zip) {
     Remove-Item -LiteralPath (Resolve-Path -LiteralPath $zip).Path -Force
 }
 $readme = Join-Path $release "安装说明.txt"
 @"
-AI 矢量助手 v2.3.7 安装包
+AI 矢量助手 v2.3.8 安装包
 
 1. 关闭所有 CorelDRAW。
-2. 右键 AI矢量助手-安装程序-v2.3.7.exe，选择“以管理员身份运行”。
+2. 右键 AI矢量助手-安装程序-v2.3.8.exe，选择“以管理员身份运行”。
 3. 勾选要安装的 CorelDRAW 版本，点击“安装”。
 4. 安装完成后重新启动 CorelDRAW。
 5. 如需卸载，重新运行安装程序，勾选目标版本后点击“卸载选中”。

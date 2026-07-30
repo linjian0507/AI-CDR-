@@ -38,7 +38,7 @@ namespace AIVectorInstaller
 
     internal static class CdrDetector
     {
-        private static readonly Regex VersionNumber = new Regex(@"(?<!\d)(1[4-9]|2[0-9])(?:\.0)?(?!\d)", RegexOptions.Compiled);
+        private static readonly Regex VersionNumber = new Regex(@"(?<!\d)(1[4-9]|2[0-9])(?:\.(\d+))?(?!\d)", RegexOptions.Compiled);
 
         public static List<CdrInstallation> Detect()
         {
@@ -163,15 +163,13 @@ namespace AIVectorInstaller
         private static string BuildDisplayName(string programsDirectory, string registryVersion, string suiteVersion)
         {
             var major = 0;
-            var match = VersionNumber.Match(registryVersion ?? "");
-            if (match.Success) int.TryParse(match.Groups[1].Value, out major);
-            if (major == 0)
+            var minor = 0;
+            if (!TryParseCdrVersion(registryVersion, out major, out minor))
             {
-                match = VersionNumber.Match(programsDirectory);
-                if (match.Success) int.TryParse(match.Groups[1].Value, out major);
+                TryParseCdrVersion(programsDirectory, out major, out minor);
             }
 
-            var product = ProductName(major);
+            var product = ProductName(major, minor);
             var is64 = programsDirectory.EndsWith("Programs64", StringComparison.OrdinalIgnoreCase)
                 || programsDirectory.IndexOf("x64", StringComparison.OrdinalIgnoreCase) >= 0;
             var architecture = is64 ? "64位" : "32位";
@@ -182,11 +180,22 @@ namespace AIVectorInstaller
             return product + " " + architecture;
         }
 
-        private static string ProductName(int major)
+        private static bool TryParseCdrVersion(string text, out int major, out int minor)
+        {
+            major = 0;
+            minor = 0;
+            var match = VersionNumber.Match(text ?? "");
+            if (!match.Success) return false;
+            int.TryParse(match.Groups[1].Value, out major);
+            if (match.Groups[2].Success) int.TryParse(match.Groups[2].Value, out minor);
+            return major > 0;
+        }
+
+        private static string ProductName(int major, int minor)
         {
             if (major >= 14 && major <= 18) return "X" + (major - 10);
             if (major == 19) return "2017";
-            if (major == 24) return "2022";
+            if (major == 24) return minor >= 3 ? "2023" : "2022";
             if (major >= 25 && major <= 30) return (1999 + major).ToString();
             if (major >= 20 && major <= 23) return (1998 + major).ToString();
             return "";
@@ -223,7 +232,7 @@ namespace AIVectorInstaller
 
         public InstallerForm()
         {
-            Text = "AI矢量助手安装程序 v2.3.7";
+            Text = "AI矢量助手安装程序 v2.3.8";
             StartPosition = FormStartPosition.CenterScreen;
             ClientSize = new Size(470, 390);
             FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -234,7 +243,7 @@ namespace AIVectorInstaller
             var title = new Label
             {
                 AutoSize = true,
-                Text = "AI矢量助手 v2.3.7",
+                Text = "AI矢量助手 v2.3.8",
                 Font = new Font("Microsoft YaHei UI", 18F, FontStyle.Bold),
                 ForeColor = Color.FromArgb(244, 61, 111),
                 Location = new Point(150, 12)
