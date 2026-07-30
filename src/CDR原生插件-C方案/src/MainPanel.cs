@@ -829,7 +829,13 @@ namespace AIVectorHelper
             dynamic layer = doc.ActiveLayer;
             var runtimeAssembly = typeof(CdrApp).Assembly;
             var filterType = runtimeAssembly.GetType("Corel.Interop.VGCore.cdrFilter", true);
-            var optionsType = runtimeAssembly.GetType("Corel.Interop.VGCore.StructImportOptions", true);
+            // StructImportOptions 是 COM 接口/抽象类型，不能直接 Activator.CreateInstance。
+            // 真正可创建的 coclass 是 StructImportOptionsClass；旧代码在
+            // CDR 2022/2023/2026 中会因此抛出“无法创建接口的实例”。
+            var optionsType = runtimeAssembly.GetType("Corel.Interop.VGCore.StructImportOptionsClass", false)
+                ?? runtimeAssembly.GetType("Corel.Interop.VGCore.StructImportOptions", true);
+            if (optionsType.IsInterface || optionsType.IsAbstract)
+                throw new InvalidOperationException("当前 CorelDRAW 互操作程序集没有可创建的 StructImportOptionsClass。");
             var filter = Enum.Parse(filterType, "cdrAutoSense");
             var options = Activator.CreateInstance(optionsType);
             layer.Import(path, filter, options);

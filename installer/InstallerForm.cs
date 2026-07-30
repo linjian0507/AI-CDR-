@@ -232,7 +232,7 @@ namespace AIVectorInstaller
 
         public InstallerForm()
         {
-            Text = "AI矢量助手安装程序 v2.3.8";
+            Text = "AI矢量助手安装程序 v2.3.9";
             StartPosition = FormStartPosition.CenterScreen;
             ClientSize = new Size(470, 390);
             FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -243,7 +243,7 @@ namespace AIVectorInstaller
             var title = new Label
             {
                 AutoSize = true,
-                Text = "AI矢量助手 v2.3.8",
+                Text = "AI矢量助手 v2.3.9",
                 Font = new Font("Microsoft YaHei UI", 18F, FontStyle.Bold),
                 ForeColor = Color.FromArgb(244, 61, 111),
                 Location = new Point(150, 12)

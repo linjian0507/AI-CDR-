@@ -1,5 +1,10 @@
 # 更新记录
 
+## v2.3.9 - 2026-07-30
+
+- 修复 CDR 2022/2023/2026 导入 SVG 和图片时报「无法创建接口的实例」的问题。
+- 导入参数改为实例化当前 CorelDRAW 运行时程序集中的 `StructImportOptionsClass`，不再错误实例化抽象的 `StructImportOptions` 接口。
+
 ## v2.3.8 - 2026-07-30
 
 - 修复部分 CorelDRAW 2023 导入图片时报「未能将图像的参数转换为 Import」的问题。
